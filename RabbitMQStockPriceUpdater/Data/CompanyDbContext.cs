@@ -18,23 +18,49 @@ namespace RabbitMQStockPriceUpdater.Data
         {
             return base.SaveChangesAsync();
         }
-        //public void AddOrUpdate<TEntity>(TEntity entity)
-        //where TEntity : class
-        //{
+        public void AddOrUpdate<TEntity>(TEntity entity) where TEntity : class
+        {
+            var entry = Entry(entity);
 
+            if (entry.State == EntityState.Detached)
+            {
+                // If the entity is not being tracked, try to find it in the context
+                var existingEntity = Set<TEntity>().Find(GetKeyValues(entity));
 
-        //    var entry = Entry(entity);
+                if (existingEntity == null)
+                {
+                    Set<TEntity>().Add(entity);
+                }
+                else
+                {
+                    // If the entity is found, update its properties
+                    // Entry(existingEntity).CurrentValues.SetValues(entity);
+                    var entryExisting = Entry(existingEntity);
+                    foreach (var property in entryExisting.OriginalValues.Properties)
+                    {
+                        var original = entryExisting.OriginalValues[property];
+                        var current = entry.CurrentValues[property];
 
-        //    if (entry.State == EntityState.Detached)
-        //    {
-        //        Set<TEntity>().Add(entity);
-        //    }
-        //    else
-        //    {
-        //        entry.State = EntityState.Modified;
-        //    }
+                        // Only update properties that have changed
+                        if (!object.Equals(original, current))
+                        {
+                            entryExisting.Property(property).IsModified = true;
+                            entryExisting.Property(property).CurrentValue = current;
+                        }
+                    }
+                }
+            }
 
-        //    SaveChangesAsync();
-        //}
+            SaveChanges();
+        }
+
+        private object[] GetKeyValues<TEntity>(TEntity entity) where TEntity : class
+        {
+            var entry = Entry(entity);
+            var keyProperties = entry.Metadata.FindPrimaryKey().Properties;
+
+            return keyProperties.Select(p => entry.Property(p.Name).CurrentValue).ToArray();
+        }
+
     }
 }

@@ -1,0 +1,51 @@
+﻿
+@{
+    Layout = null;
+}
+<!-- ReceiveMessages.cshtml -->
+@model string
+
+<h2>Received Messages</h2>
+<div id="messages"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+<script>
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/messageHub")
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    async function start() {
+        try {
+            await connection.start();
+            console.log("SignalR Connected.");
+        } catch (err) {
+            console.log(err);
+            setTimeout(start, 5000);
+        }
+    };
+    connection.on("ReceiveMessage", function (message) {
+           $("#messages").append(`<p>${message}</p>`);
+        });
+    connection.onclose(async () => {
+        await start();
+    });
+
+    // Start the connection.
+    start();
+    //const connection = new signalR.HubConnectionBuilder()
+    //    .withUrl("/messageHub")
+    //    .build();
+
+    //connection.start().then(function () {
+    //    console.log("SignalR Connected");
+    //}).catch(function (err) {
+    //    return console.error(err.toString());
+    //});
+
+    //connection.on("ReceiveMessage", function (message) {
+    //    $("#messages").append(`<p>${message}</p>`);
+    //});
+</script>

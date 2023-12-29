@@ -25,21 +25,19 @@ namespace RabbitMQStockPriceUpdater.Service
         }
         public async Task<CompanyPrice> GetCompanyID(int CompanyID)
         {
-            return await _context.CompanyPrice.Where(x => x.CompanyID == CompanyID).FirstOrDefaultAsync();
-           
+            CompanyPrice companyPrice = await _context.CompanyPrice.AsNoTracking().Where(x => x.CompanyID == CompanyID).FirstOrDefaultAsync();
+            //  _context.Detach(companyPrice);
+            return companyPrice;
+
         }
-        public async Task UpdateDatabaseAsync(CompanyPrice companyPrice)
+        public async Task<CompanyPrice> UpdateDatabaseAsync(CompanyPrice companyPrice)
         {
             CompanyPrice obj = await GetCompanyID(companyPrice.CompanyID);
-            if(obj != null)
-            {
+            if (obj != null)
                 companyPrice.PriceID = obj.PriceID;
-                _context.CompanyPrice.Update(companyPrice);
-            }
-            else
-                _context.CompanyPrice.Add(companyPrice);
+            _context.AddOrUpdate(companyPrice);
+            return companyPrice;
 
-          await  _context.SaveChangesAsync();
         }
     }
 }

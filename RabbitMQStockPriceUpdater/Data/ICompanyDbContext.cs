@@ -12,7 +12,7 @@ namespace RabbitMQStockPriceUpdater.Data
        
 DbSet<UserCompanySubscription> UserCompanySubscription { get; set; }
         public DbSet<CompanyPrice> CompanyPrice { get; set; }
-      //  void AddOrUpdate<TEntity>(TEntity entity) where TEntity : class;
+        void AddOrUpdate<TEntity>(TEntity entity) where TEntity : class;
           Task<int> SaveChangesAsync();
 
     }

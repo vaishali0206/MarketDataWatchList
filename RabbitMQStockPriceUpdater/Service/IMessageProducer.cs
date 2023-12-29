@@ -8,7 +8,6 @@ namespace RabbitMQStockPriceUpdater.Service
 {
     public interface IMessageProducer
     {
-        public void SendMessage<T>(T message);
-        
+        public void SendMessage<T>(T message, string queuename);
     }
 }

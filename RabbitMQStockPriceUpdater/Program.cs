@@ -30,17 +30,29 @@ IHostBuilder CreateHostBuilder(string[] strings)
     return Host.CreateDefaultBuilder()
         .ConfigureServices((_, services) =>
         {
-            services.AddDbContext<CompanyDbContext>(options => options.UseSqlServer(connectionString));
+           // services.AddDbContext<CompanyDbContext>(options => options.UseSqlServer(connectionString));
 
             services.AddDbContext<CompanyDbContext>(options =>
             {
                 options.UseSqlServer(connectionString);
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
+            services.AddSingleton<IRabbitMqManager>(provider =>
+            {
+                // Configure RabbitMQ connection parameters
+                var hostName = config["RabbitMQ:HostName"];
+                var port =Convert.ToInt32( config["RabbitMQ:Port"]);
+                var userName = config["RabbitMQ:UserName"];
+                var password =config["RabbitMQ:Password"];
+
+                return new RabbitMqManager(hostName, port, userName, password);
+            });
             services.AddScoped<ICompanyDbContext, CompanyDbContext>();
             services.AddScoped<ICompanyQueue, CompanyQueue>();
             services.AddScoped<IPriceUpdater, PriceUpdater>();
+            services.AddScoped<IMessageProducer, RabbitMQProducer>();
             services.AddScoped<Random>();
+          
         });
 
 
@@ -68,6 +80,7 @@ async Task ExecutePeriodicTaskAsync()
     // Call the service method here
     var priceUpdater = services.GetRequiredService<IPriceUpdater>();
     var companyQueue = services.GetRequiredService<ICompanyQueue>();
+    var producer = services.GetRequiredService<IMessageProducer>();
 
     List<UserCompanySubscription> lst = await companyQueue.SubscriptionList();
     int companyId = await companyQueue.GetRandomCompanyID(lst);
@@ -75,7 +88,9 @@ async Task ExecutePeriodicTaskAsync()
     CompanyPrice obj = new CompanyPrice();
     obj.CompanyID = companyId;
     obj.Price = price;
-    await priceUpdater.UpdateDatabaseAsync(obj);
+    CompanyPrice companyPrice=  await priceUpdater.UpdateDatabaseAsync(obj);
+    producer.SendMessage(companyPrice, companyPrice.CompanyID.ToString());
+
 
 
 

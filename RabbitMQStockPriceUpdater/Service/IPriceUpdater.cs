@@ -10,7 +10,7 @@ namespace RabbitMQStockPriceUpdater.Service
     public interface IPriceUpdater
     {
         Task<decimal> RandomePriceGenerator(int CompanyID);
-        public Task UpdateDatabaseAsync(CompanyPrice obj);
+        public Task<CompanyPrice> UpdateDatabaseAsync(CompanyPrice obj);
        // Task UpdateDataPeriodicallyAsync(CancellationToken cancellationToken);
     }
 }
