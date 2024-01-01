@@ -23,13 +23,21 @@ namespace RabbitMQSignalRConsumer.Service
 
         public async Task<List<UserCompanySubscription>> SubscriptionList()
         {
-            return await _context.UserCompanySubscriptions.ToListAsync();
+            return await _context.UserCompanySubscription.ToListAsync();
         }
 
         public async Task<List<UserCompanySubscription>> GetCompanybyUserID(int userID)
         {
-            List<UserCompanySubscription> lst = await _context.UserCompanySubscriptions.Where(x => x.UserID == userID).ToListAsync();
-            return lst;
+            try
+            {
+                List<UserCompanySubscription> lst = await _context.UserCompanySubscription.Where(x => x.UserID == userID).ToListAsync();
+                return lst;
+            }
+            catch(Exception ex)
+            {
+                return null;
+            }
+           
         }
 
     }

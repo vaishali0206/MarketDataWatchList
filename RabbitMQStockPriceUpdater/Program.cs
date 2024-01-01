@@ -89,7 +89,7 @@ async Task ExecutePeriodicTaskAsync()
     obj.CompanyID = companyId;
     obj.Price = price;
     CompanyPrice companyPrice=  await priceUpdater.UpdateDatabaseAsync(obj);
-    producer.SendMessage(companyPrice, companyPrice.CompanyID.ToString());
+    producer.SendMessage(companyPrice, "StockPrice_Queue");
 
 
 

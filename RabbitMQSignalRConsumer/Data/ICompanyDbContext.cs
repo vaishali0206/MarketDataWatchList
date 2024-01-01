@@ -10,7 +10,7 @@ namespace RabbitMQSignalRConsumer.Data
     public interface ICompanyDbContext
     {
 
-        DbSet<UserCompanySubscription> UserCompanySubscriptions { get; set; }
+        DbSet<UserCompanySubscription> UserCompanySubscription { get; set; }
         public DbSet<CompanyPrice> CompanyPrices { get; set; }
         public DbSet<CompanyMaster> CompanyMasters { get; set; }
         public DbSet<Users> Users { get; set; }

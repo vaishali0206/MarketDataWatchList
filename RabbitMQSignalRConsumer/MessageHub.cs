@@ -4,14 +4,14 @@ namespace RabbitMQSignalRConsumer
 {
     public interface ITypedHubClient
     {
-        Task ReceiveMessage( string message);
+        Task ReceiveMessage( string message, string json);
     }
 
     public class MessageHub : Hub<ITypedHubClient>
     {
-        public void Send(string name, string message)
+        public void Send( string message,string json)
         {
-            Clients.All.ReceiveMessage( message);
+            Clients.All.ReceiveMessage( message, json);
         }
 
     }

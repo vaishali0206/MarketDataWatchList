@@ -1,13 +1,32 @@
+using Microsoft.EntityFrameworkCore;
 using RabbitMQSignalRConsumer;
+using RabbitMQSignalRConsumer.Data;
+using RabbitMQSignalRConsumer.Service;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = new ConfigurationBuilder()
+           .AddJsonFile("appsettings.json")
+           .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+           .Build();
 
+var defaultConnectionString = config.GetConnectionString("ConnectionStrings:StudentDbContext");
+
+
+
+var connectionString = config["ConnectionStrings:StudentDbContext"];
+builder.Services .AddDbContext<CompanyDbContext>(options =>
+{
+    options.UseSqlServer(connectionString);
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
-builder.Services.AddSignalR();
+builder.Services.AddScoped<ICompanyDbContext, CompanyDbContext>();
 builder.Services.AddSingleton<RabbitMQConsumer>();
 builder.Services.AddSingleton<TimerService>();
+builder.Services.AddScoped<IUser,User>();
+builder.Services.AddScoped<ICompanySubsciption,CompanySubsciption>();
 //builder.Services.AddHostedService<TimerService>();
 var app = builder.Build();
 

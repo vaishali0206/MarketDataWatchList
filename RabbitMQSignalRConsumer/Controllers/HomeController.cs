@@ -2,6 +2,7 @@
 using RabbitMQSignalRConsumer.Data;
 using RabbitMQSignalRConsumer.Models;
 using RabbitMQSignalRConsumer.Service;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace RabbitMQSignalRConsumer.Controllers
@@ -10,11 +11,11 @@ namespace RabbitMQSignalRConsumer.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly TimerService _timerService;
-        private readonly User _user;
-        private readonly CompanySubsciption _companySubscription;
+        private readonly IUser _user;
+        private readonly ICompanySubsciption _companySubscription;
 
 
-        public HomeController(ILogger<HomeController> logger, TimerService timerService, User user, CompanySubsciption companySubscription)
+        public HomeController(ILogger<HomeController> logger, TimerService timerService, IUser user, ICompanySubsciption companySubscription)
         {
             _logger = logger;
             _timerService = timerService;
@@ -24,29 +25,34 @@ namespace RabbitMQSignalRConsumer.Controllers
 
         public IActionResult Index()
         {
-              return View();
-           
+            return View();
+
         }
         [HttpPost]
-        public async Task< IActionResult> Index(string username)
+        public async Task<IActionResult> Index(string username)
         {
             if (!string.IsNullOrWhiteSpace(username))
             {
-                Users obj =await _user.GetUserByUserName(username);
-                if(obj!=null )
+                Users obj = await _user.GetUserByUserName(username);
+                if (obj != null)
                 {
-             List<UserCompanySubscription> lst = await _companySubscription.GetCompanybyUserID(obj.UserID);
-                    if(lst!=null  || lst.Count>0)
-                    {
-                    
-                    }
-                }
+                    List<UserCompanySubscription> lst = await _companySubscription.GetCompanybyUserID(obj.UserID);
+                    //    if (lst != null || lst.Count > 0)
+                    //    {
+                    //        for (int i = 0; i < lst.Count; i++)
+                    //        {
+                    //            int threadNumber = i + 1; // Just for display purposes
+                    //            Task.Run(() => DoWork(threadNumber));
+                    //        }
+                    //    }
 
-                _timerService.Start();
-                return Redirect("~/Index.html");
+
+                    _timerService.Start(lst);
+                    return Redirect("~/Index.html");
+                }
             }
-           
-                return View();
+
+            return View();
         }
         public IActionResult Privacy()
         {

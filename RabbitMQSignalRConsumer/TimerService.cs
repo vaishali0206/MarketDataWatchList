@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using RabbitMQSignalRConsumer;
+using RabbitMQSignalRConsumer.Data;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,10 +21,18 @@ public class TimerService :  IDisposable
 
     //    return Task.CompletedTask;
     //}
-    public void Start()
-    {
+    public void Start(List<UserCompanySubscription> lst)
+    {if (lst != null || lst.Count > 0)
+        {
+            List<int> lstCompanyIDs = lst.Select(x => x.CompanyID).ToList();
+            for (int i = 0; i < 5; i++)
+            {
+              //  int threadNumber = i + 1; // Just for display purposes
+                Task.Run(() => DoWork(lstCompanyIDs));
+            }
+        }
         // Implement your timer start logic here
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+       // _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
     }
 
     // Rest of the TimerService implementation...
@@ -32,9 +41,17 @@ public class TimerService :  IDisposable
     //{
     //    // Implement the work to be done by the timer
     //}
-    private void DoWork(object state)
+    private void DoWork1(object state)
     {
-        _rabbitMQConsumer.StartConsuming();
+       // _rabbitMQConsumer.StartConsuming();
+    }
+    private void DoWork(List<int> lstCompanyIDs)
+    {
+        while (true)
+        {
+            _rabbitMQConsumer.StartConsuming(lstCompanyIDs);
+            Thread.Sleep(100);
+        }
     }
 
     public Task StopAsync(CancellationToken stoppingToken)

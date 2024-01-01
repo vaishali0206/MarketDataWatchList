@@ -12,7 +12,8 @@
     <script>
         var connection = new signalR.HubConnectionBuilder().withUrl("/messageHub").build();
 
-        connection.on("ReceiveMessage", function (message) {
+        connection.on("ReceiveMessage", function (message, json) {
+            console.log(json);
             // Handle the incoming message and update your HTML
             $("#messages").append("<p>" + message + "</p>");
         });

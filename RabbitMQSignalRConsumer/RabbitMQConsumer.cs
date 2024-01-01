@@ -2,6 +2,8 @@
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using System.Text;
+using System.ComponentModel.Design;
+using Newtonsoft.Json;
 
 namespace RabbitMQSignalRConsumer
 {
@@ -14,7 +16,7 @@ namespace RabbitMQSignalRConsumer
             _hubContext = hubContext;
         }
 
-        public void StartConsuming()
+        public void StartConsuming(List<int> lstCompanyIDs)
         {
             var factory = new ConnectionFactory() {
                 HostName = "localhost",
@@ -25,7 +27,7 @@ namespace RabbitMQSignalRConsumer
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            var queueName = "1";
+            var queueName = "StockPrice_Queue";
             channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
             var consumer = new EventingBasicConsumer(channel);
@@ -40,9 +42,11 @@ namespace RabbitMQSignalRConsumer
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
 
+                var json = JsonConvert.SerializeObject(lstCompanyIDs);
+
                 // Broadcast message to SignalR clients
                 //   _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
-                _hubContext.Clients.All.ReceiveMessage(message);
+                _hubContext.Clients.All.ReceiveMessage(message, json);
             };
 
             channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
