@@ -6,23 +6,25 @@ using System.ComponentModel.Design;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
+using RabbitMQSignalRConsumer.Models;
 
 namespace RabbitMQSignalRConsumer
 {
     public class RabbitMQConsumer
     {
         private readonly IHubContext<MessageHub, ITypedHubClient> _hubContext;
-      //  private readonly ConcurrentDictionary<string, string> _userConnectionMap;
+        //  private readonly ConcurrentDictionary<string, string> _userConnectionMap;
 
         public RabbitMQConsumer(IHubContext<MessageHub, ITypedHubClient> hubContext)
         {
             _hubContext = hubContext;
-          //  _userConnectionMap = userConnectionMap;
+            //  _userConnectionMap = userConnectionMap;
         }
 
         public void StartConsuming(List<int> lstCompanyIDs, string userId)
         {
-            var factory = new ConnectionFactory() {
+            var factory = new ConnectionFactory()
+            {
                 HostName = "localhost",
                 UserName = "guest",
                 Password = "guest",
@@ -46,23 +48,29 @@ namespace RabbitMQSignalRConsumer
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
 
-                var json = JsonConvert.SerializeObject(lstCompanyIDs);
+              //  var json = JsonConvert.SerializeObject(lstCompanyIDs);
 
                 // Broadcast message to SignalR clients
                 //   _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
-                  _hubContext.Clients.All.ReceiveMessage(message, json);
-                // _hubContext.Clients.User( userId).ReceiveMessage(message, json,userId);
-                //if ( MessageHub._userConnectionMap.TryGetValue(userId.ToString(), out string specificConnectionId))
+                //  _hubContext.Clients.All.ReceiveMessage(message, json);
+
+                //  if (MessageHub.userConnectionMap.ContainsKey(userId))
+                foreach (KeyValuePair<string, UserConnection> entry in MessageHub.userConnectionMap)
+                {
+                    UserConnection obj = entry.Value;
+                    var json = JsonConvert.SerializeObject(obj.CompanyIDs);
+
+                    _hubContext.Clients.Client(obj.ConnectionID).ReceiveMessage(message, json, entry.Key, obj.ConnectionID);
+                }
                 //{
-                //    // Send the message to the specific user on the specific connection
-                //     _hubContext.Clients.Client(specificConnectionId).ReceiveMessage(message, json, userId);
+                   
+                //        string connectionId = MessageHub.userConnectionMap[userId];
+                //    //  Clients.Client(connectionId).ReceiveMessage(message, json, userId);
+                //    _hubContext.Clients.Client(connectionId).ReceiveMessage(message, json, userId);
                 //}
-                //else
-                //{
-                //    // Handle the case where the user is not connected
-                //    // You can log a message or take appropriate action
-                //}
-                // await hubContext.Clients.User("userId").ReceiveMessage("Message from RabbitMQ", message, "RabbitMQ");
+
+
+
             };
 
             channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);

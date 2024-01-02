@@ -2,7 +2,8 @@
 {
     public class UserConnection
     {
-        public string UserName { set; get; }
+      
         public string ConnectionID { set; get; }
+        public List<int> CompanyIDs { set; get; }
     }
 }

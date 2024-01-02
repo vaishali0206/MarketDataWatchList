@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNetCore.Mvc;
 using RabbitMQSignalRConsumer.Data;
 using RabbitMQSignalRConsumer.Models;
 using RabbitMQSignalRConsumer.Service;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace RabbitMQSignalRConsumer.Controllers
 {
@@ -13,7 +15,9 @@ namespace RabbitMQSignalRConsumer.Controllers
         private readonly TimerService _timerService;
         private readonly IUser _user;
         private readonly ICompanySubsciption _companySubscription;
-
+        
+        private HubConnection _connection;
+        private const string HubUrl = "~/messageHub";
 
         public HomeController(ILogger<HomeController> logger, TimerService timerService, IUser user, ICompanySubsciption companySubscription)
         {
@@ -21,6 +25,7 @@ namespace RabbitMQSignalRConsumer.Controllers
             _timerService = timerService;
             _user = user;
             _companySubscription = companySubscription;
+
         }
 
         public IActionResult Index()
@@ -36,8 +41,13 @@ namespace RabbitMQSignalRConsumer.Controllers
                 Users obj = await _user.GetUserByUserName(username);
                 if (obj != null)
                 {
+                    Dictionary<string, string> _querystringdata = new Dictionary<string, string>();
+                    _querystringdata.Add("userid", obj.UserID.ToString());
+                    _connection = new HubConnection(HubUrl, _querystringdata);
+                    TempData["SignalRHubUrl"] = @"http://localhost:6842/messageHub?userid=" + obj.UserID.ToString();
+                    TempData["userID"] = obj.UserID; 
                     List<UserCompanySubscription> lst = await _companySubscription.GetCompanybyUserID(obj.UserID);
-                    //    if (lst != null || lst.Count > 0)
+                  //  //    if (lst != null || lst.Count > 0)
                     //    {
                     //        for (int i = 0; i < lst.Count; i++)
                     //        {
@@ -47,11 +57,21 @@ namespace RabbitMQSignalRConsumer.Controllers
                     //    }
 
 
-                    _timerService.Start(lst,obj.UserID.ToString());
-                    return Redirect("~/Index.html");
+                  //  _timerService.Start(lst, obj.UserID.ToString());
+                    //   return Redirect("~/Index.html");
+                    return RedirectToAction("SignalR");
                 }
             }
 
+            return View();
+        }
+        public async Task  <IActionResult> SignalR()
+        {
+            int userid =Convert.ToInt32( TempData["userID"]);
+            List<UserCompanySubscription> lst = await _companySubscription.GetCompanybyUserID(userid);
+            List<int> lstCompanyIDs = lst.Select(x => x.CompanyID).ToList();
+           MessageHub. AddOrUpdateUserConnection(userid.ToString(), "", lstCompanyIDs);
+            _timerService.Start(lstCompanyIDs, userid.ToString());
             return View();
         }
         public IActionResult Privacy()

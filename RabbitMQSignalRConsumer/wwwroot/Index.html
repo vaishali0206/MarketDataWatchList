@@ -8,23 +8,24 @@
 
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.8/signalr.min.js"></script>
+    @{
+    // Retrieve the dynamically generated SignalR hub URL from ViewData
+    string signalRHubUrl = ViewData["SignalRHubUrl"]?.ToString();
+    }
 
     <script>
         var connection = new signalR.HubConnectionBuilder().withUrl("/messageHub").build();
 
-        connection.on("ReceiveMessage", function (message, json,userid) {
+        connection.on("ReceiveMessage", function (message, json, userid) {
             console.log(json);
             console.log(userid);
             // Handle the incoming message and update your HTML
             $("#messages").append("<p>" + message + "</p>");
         });
-        const username = '1';
-       // $.connection.hub.qs = { 'username' : 'anik' };
+        const username = 1;
         connection.start().then(function () {
             console.log("Connected to SignalR Hub");
-            //connection.invoke("SetUsername", username).catch(function (err) {
-            //    console.error(err.toString());
-            //});
+
         }).catch(function (err) {
             console.error(err.toString());
         });

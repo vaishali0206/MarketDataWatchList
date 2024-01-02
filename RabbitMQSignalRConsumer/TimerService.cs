@@ -21,16 +21,15 @@ public class TimerService :  IDisposable
 
     //    return Task.CompletedTask;
     //}
-    public void Start(List<UserCompanySubscription> lst,string userId)
-    {if (lst != null || lst.Count > 0)
-        {
-            List<int> lstCompanyIDs = lst.Select(x => x.CompanyID).ToList();
+    public void Start(List<int> lstCompanyIDs, string userId)
+    {
+          //  List<int> lstCompanyIDs = lst.Select(x => x.CompanyID).ToList();
             for (int i = 0; i < 5; i++)
             {
               //  int threadNumber = i + 1; // Just for display purposes
                 Task.Run(() => DoWork(lstCompanyIDs, userId));
             }
-        }
+        
         // Implement your timer start logic here
        // _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
     }
