@@ -22,14 +22,14 @@
 
     <script>
         var connection = new signalR.HubConnectionBuilder().withUrl("@signalRHubUrl").build();
-
+       // console.log(@signalRHubUrl);
         connection.on("ReceiveMessage", function (message, json, userid, connectionId) {
             console.log(connectionId);
             console.log("Company IDS : " + json);
             var obj = JSON.parse(message);
-            if (json.includes(obj.CompanyID)) {
+         //   if (json.includes(obj.CompanyID)) {
                 $("#messages").append("<p>" + message + "</p>");
-            }
+         //   }
             console.log("USer ID : "+userid);
             // Handle the incoming message and update your HTML
 

@@ -46,7 +46,7 @@ namespace RabbitMQSignalRConsumer.Controllers
                     _connection = new HubConnection(HubUrl, _querystringdata);
                     TempData["SignalRHubUrl"] = @"http://localhost:6842/messageHub?userid=" + obj.UserID.ToString();
                     TempData["userID"] = obj.UserID; 
-                    List<UserCompanySubscription> lst = await _companySubscription.GetCompanybyUserID(obj.UserID);
+                  //  List<UserCompanySubscription> lst = await _companySubscription.GetCompanybyUserID(obj.UserID);
                   //  //    if (lst != null || lst.Count > 0)
                     //    {
                     //        for (int i = 0; i < lst.Count; i++)

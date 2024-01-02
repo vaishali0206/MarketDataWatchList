@@ -47,8 +47,9 @@ namespace RabbitMQSignalRConsumer
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
+                dynamic dy = JsonConvert.DeserializeObject<dynamic>(message);
 
-              //  var json = JsonConvert.SerializeObject(lstCompanyIDs);
+                //  var json = JsonConvert.SerializeObject(lstCompanyIDs);
 
                 // Broadcast message to SignalR clients
                 //   _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
@@ -57,13 +58,17 @@ namespace RabbitMQSignalRConsumer
                 //  if (MessageHub.userConnectionMap.ContainsKey(userId))
                 foreach (KeyValuePair<string, UserConnection> entry in MessageHub.userConnectionMap)
                 {
+
                     UserConnection obj = entry.Value;
                     var json = JsonConvert.SerializeObject(obj.CompanyIDs);
-
-                    _hubContext.Clients.Client(obj.ConnectionID).ReceiveMessage(message, json, entry.Key, obj.ConnectionID);
+                    if (obj.CompanyIDs.Contains(Convert.ToInt32(dy.CompanyID)))
+                    {
+                        if(!string.IsNullOrWhiteSpace( obj.ConnectionID))
+                        _hubContext.Clients.Client(obj.ConnectionID).ReceiveMessage(message, json, entry.Key, obj.ConnectionID);
+                    }
                 }
                 //{
-                   
+
                 //        string connectionId = MessageHub.userConnectionMap[userId];
                 //    //  Clients.Client(connectionId).ReceiveMessage(message, json, userId);
                 //    _hubContext.Clients.Client(connectionId).ReceiveMessage(message, json, userId);
