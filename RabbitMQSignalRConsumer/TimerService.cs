@@ -21,14 +21,14 @@ public class TimerService :  IDisposable
 
     //    return Task.CompletedTask;
     //}
-    public void Start(List<UserCompanySubscription> lst)
+    public void Start(List<UserCompanySubscription> lst,string userId)
     {if (lst != null || lst.Count > 0)
         {
             List<int> lstCompanyIDs = lst.Select(x => x.CompanyID).ToList();
             for (int i = 0; i < 5; i++)
             {
               //  int threadNumber = i + 1; // Just for display purposes
-                Task.Run(() => DoWork(lstCompanyIDs));
+                Task.Run(() => DoWork(lstCompanyIDs, userId));
             }
         }
         // Implement your timer start logic here
@@ -45,11 +45,11 @@ public class TimerService :  IDisposable
     {
        // _rabbitMQConsumer.StartConsuming();
     }
-    private void DoWork(List<int> lstCompanyIDs)
+    private void DoWork(List<int> lstCompanyIDs, string userId)
     {
         while (true)
         {
-            _rabbitMQConsumer.StartConsuming(lstCompanyIDs);
+            _rabbitMQConsumer.StartConsuming(lstCompanyIDs, userId);
             Thread.Sleep(100);
         }
     }

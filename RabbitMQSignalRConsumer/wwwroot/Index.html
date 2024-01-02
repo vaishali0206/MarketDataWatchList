@@ -12,14 +12,19 @@
     <script>
         var connection = new signalR.HubConnectionBuilder().withUrl("/messageHub").build();
 
-        connection.on("ReceiveMessage", function (message, json) {
+        connection.on("ReceiveMessage", function (message, json,userid) {
             console.log(json);
+            console.log(userid);
             // Handle the incoming message and update your HTML
             $("#messages").append("<p>" + message + "</p>");
         });
-
+        const username = '1';
+       // $.connection.hub.qs = { 'username' : 'anik' };
         connection.start().then(function () {
             console.log("Connected to SignalR Hub");
+            //connection.invoke("SetUsername", username).catch(function (err) {
+            //    console.error(err.toString());
+            //});
         }).catch(function (err) {
             console.error(err.toString());
         });

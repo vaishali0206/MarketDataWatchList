@@ -4,19 +4,23 @@ using RabbitMQ.Client;
 using System.Text;
 using System.ComponentModel.Design;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 
 namespace RabbitMQSignalRConsumer
 {
     public class RabbitMQConsumer
     {
         private readonly IHubContext<MessageHub, ITypedHubClient> _hubContext;
+      //  private readonly ConcurrentDictionary<string, string> _userConnectionMap;
 
         public RabbitMQConsumer(IHubContext<MessageHub, ITypedHubClient> hubContext)
         {
             _hubContext = hubContext;
+          //  _userConnectionMap = userConnectionMap;
         }
 
-        public void StartConsuming(List<int> lstCompanyIDs)
+        public void StartConsuming(List<int> lstCompanyIDs, string userId)
         {
             var factory = new ConnectionFactory() {
                 HostName = "localhost",
@@ -46,7 +50,19 @@ namespace RabbitMQSignalRConsumer
 
                 // Broadcast message to SignalR clients
                 //   _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
-                _hubContext.Clients.All.ReceiveMessage(message, json);
+                  _hubContext.Clients.All.ReceiveMessage(message, json);
+                // _hubContext.Clients.User( userId).ReceiveMessage(message, json,userId);
+                //if ( MessageHub._userConnectionMap.TryGetValue(userId.ToString(), out string specificConnectionId))
+                //{
+                //    // Send the message to the specific user on the specific connection
+                //     _hubContext.Clients.Client(specificConnectionId).ReceiveMessage(message, json, userId);
+                //}
+                //else
+                //{
+                //    // Handle the case where the user is not connected
+                //    // You can log a message or take appropriate action
+                //}
+                // await hubContext.Clients.User("userId").ReceiveMessage("Message from RabbitMQ", message, "RabbitMQ");
             };
 
             channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);

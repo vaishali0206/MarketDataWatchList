@@ -47,7 +47,7 @@ namespace RabbitMQSignalRConsumer.Controllers
                     //    }
 
 
-                    _timerService.Start(lst);
+                    _timerService.Start(lst,obj.UserID.ToString());
                     return Redirect("~/Index.html");
                 }
             }
