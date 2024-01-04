@@ -15,17 +15,18 @@ namespace RabbitMQSignalRConsumer.Controllers
         private readonly TimerService _timerService;
         private readonly IUser _user;
         private readonly ICompanySubsciption _companySubscription;
-        
+        private readonly ICompanyMaster _companyMaster;
+
         private HubConnection _connection;
         private const string HubUrl = "~/messageHub";
 
-        public HomeController(ILogger<HomeController> logger, TimerService timerService, IUser user, ICompanySubsciption companySubscription)
+        public HomeController(ILogger<HomeController> logger, TimerService timerService, IUser user, ICompanySubsciption companySubscription, ICompanyMaster companyMaster)
         {
             _logger = logger;
             _timerService = timerService;
             _user = user;
             _companySubscription = companySubscription;
-
+            _companyMaster = companyMaster;
         }
 
         public IActionResult Index()
@@ -70,7 +71,18 @@ namespace RabbitMQSignalRConsumer.Controllers
             int userid =Convert.ToInt32( TempData["userID"]);
             List<UserCompanySubscription> lst = await _companySubscription.GetCompanybyUserID(userid);
             List<int> lstCompanyIDs = lst.Select(x => x.CompanyID).ToList();
-           MessageHub. AddOrUpdateUserConnection(userid.ToString(), "", lstCompanyIDs);
+          
+            List<CompanyDetail> companyDetails = new List<CompanyDetail>();
+            foreach(int x in lstCompanyIDs)
+            {
+                CompanyDetail obj=new CompanyDetail();
+             CompanyMaster c=   await _companyMaster.GetCompanyByID(x);
+                obj.CompanyID = c.CompanyID;
+                obj.CompanyName= c.CompanyName;
+                obj.CompanyCode = c.CompanyCode;
+                companyDetails.Add(obj);
+            }
+            MessageHub.AddOrUpdateUserConnection(userid.ToString(), "", lstCompanyIDs,  companyDetails);
             _timerService.Start(lstCompanyIDs, userid.ToString());
             return View();
         }

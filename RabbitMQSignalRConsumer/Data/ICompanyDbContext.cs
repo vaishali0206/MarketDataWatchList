@@ -12,7 +12,7 @@ namespace RabbitMQSignalRConsumer.Data
 
         DbSet<UserCompanySubscription> UserCompanySubscription { get; set; }
         public DbSet<CompanyPrice> CompanyPrices { get; set; }
-        public DbSet<CompanyMaster> CompanyMasters { get; set; }
+        public DbSet<CompanyMaster> CompanyMaster { get; set; }
         public DbSet<Users> Users { get; set; }
         void AddOrUpdate<TEntity>(TEntity entity) where TEntity : class;
         Task<int> SaveChangesAsync();

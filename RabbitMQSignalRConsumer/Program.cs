@@ -17,7 +17,7 @@ var connectionString = config["ConnectionStrings:StudentDbContext"];
 builder.Services .AddDbContext<CompanyDbContext>(options =>
 {
     options.UseSqlServer(connectionString);
-    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    //options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -27,6 +27,7 @@ builder.Services.AddSingleton<RabbitMQConsumer>();
 builder.Services.AddSingleton<TimerService>();
 builder.Services.AddScoped<IUser,User>();
 builder.Services.AddScoped<ICompanySubsciption,CompanySubsciption>();
+builder.Services.AddScoped<ICompanyMaster, CompanyMasterDetails>();
 //builder.Services.AddHostedService<TimerService>();
 var app = builder.Build();
 

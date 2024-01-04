@@ -30,14 +30,15 @@ IHostBuilder CreateHostBuilder(string[] strings)
     return Host.CreateDefaultBuilder()
         .ConfigureServices((_, services) =>
         {
-           // services.AddDbContext<CompanyDbContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<ICompanyDbContext, CompanyDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
-            services.AddDbContext<CompanyDbContext>(options =>
-            {
-                options.UseSqlServer(connectionString);
-                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            });
-            services.AddSingleton<IRabbitMqManager>(provider =>
+            //services.AddDbContext< CompanyDbContext>(options =>
+            //{
+            //    options.UseSqlServer(connectionString);
+            //   // options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
+            //});
+            services.AddScoped<IRabbitMqManager>(provider =>
             {
                 // Configure RabbitMQ connection parameters
                 var hostName = config["RabbitMQ:HostName"];
@@ -47,10 +48,11 @@ IHostBuilder CreateHostBuilder(string[] strings)
 
                 return new RabbitMqManager(hostName, port, userName, password);
             });
-            services.AddScoped<ICompanyDbContext, CompanyDbContext>();
+         //   services.AddTransient<ICompanyDbContext, CompanyDbContext>();
             services.AddScoped<ICompanyQueue, CompanyQueue>();
             services.AddScoped<IPriceUpdater, PriceUpdater>();
             services.AddScoped<IMessageProducer, RabbitMQProducer>();
+            services.AddScoped<ICompanyDbContextFactory, CompanyDbContextFactory>();
             services.AddScoped<Random>();
           
         });
@@ -67,12 +69,22 @@ var services = scope.ServiceProvider;
 //{
 //    await ExecutePeriodicTaskAsync();
 //}
-while (true)
+Console.WriteLine("Starts");
+for (int i = 0; i < 5; i++)
 {
-    Console.WriteLine("Starts");
-    await ExecutePeriodicTaskAsync();
-    await Task.Delay(TimeSpan.FromSeconds(10));
+    //  int threadNumber = i + 1; // Just for display purposes
+ await   Task.Run(() => DoWork());
 }
+async void DoWork()
+{
+    while (true)
+    {
+       
+        await ExecutePeriodicTaskAsync();
+        await Task.Delay(TimeSpan.FromSeconds(1));
+    }
+}
+Console.ReadLine();
 async Task ExecutePeriodicTaskAsync()
 {
    

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using RabbitMQSignalRConsumer;
 using RabbitMQSignalRConsumer.Data;
+using RabbitMQSignalRConsumer.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

@@ -12,18 +12,23 @@ namespace RabbitMQStockPriceUpdater.Service
 {
     public class CompanyQueue : ICompanyQueue
     {
-        private readonly ICompanyDbContext _context;
+        // private readonly ICompanyDbContext _context;
+        private readonly ICompanyDbContextFactory _contextFactory;
         private readonly Random _random;
-        public CompanyQueue(ICompanyDbContext context)
-        {
-            _context = context;
-            _random = new Random();
-        }
 
+        public CompanyQueue(ICompanyDbContextFactory contextFactory, Random random)
+        {
+            _contextFactory = contextFactory;
+            _random = random;
+        }
 
         public async Task<List<UserCompanySubscription>> SubscriptionList()
         {
-            return await _context.UserCompanySubscription.ToListAsync();
+            // return await _context.UserCompanySubscription.ToListAsync();
+            using (var context = _contextFactory.CreateContext())
+            {
+                return await context.UserCompanySubscription.ToListAsync();
+            }
         }
 
         public async Task<int> GetRandomCompanyID(List<UserCompanySubscription> lst)

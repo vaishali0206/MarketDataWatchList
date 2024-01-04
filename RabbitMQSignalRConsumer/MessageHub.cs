@@ -17,7 +17,7 @@ namespace RabbitMQSignalRConsumer
     public class MessageHub : Hub<ITypedHubClient>
     {
         public static ConcurrentDictionary<string, UserConnection> userConnectionMap = new ConcurrentDictionary<string, UserConnection>();
-        public static void AddOrUpdateUserConnection(string userId, string connectionId, List<int> CompanyIDs)
+        public static void AddOrUpdateUserConnection(string userId, string connectionId, List<int> CompanyIDs, List<CompanyDetail> companyDetails)
         {
 
 
@@ -34,7 +34,9 @@ namespace RabbitMQSignalRConsumer
                     obj.ConnectionID = connectionId;
                 if (CompanyIDs != null)
                     obj.CompanyIDs = CompanyIDs;
+                obj.companyDetails = companyDetails;
                 userConnectionMap.TryAdd(userId, obj);
+
             }
         }
         public override async Task OnConnectedAsync()
@@ -43,7 +45,7 @@ namespace RabbitMQSignalRConsumer
 
             // Get user ID from connection metadata
             var userId = Context.GetHttpContext().Request.Query["userid"];
-            AddOrUpdateUserConnection(userId, connectionId, null);
+            AddOrUpdateUserConnection(userId, connectionId, null,null);
             await base.OnConnectedAsync();
         }
         public void Send(string message, string json, string userId)

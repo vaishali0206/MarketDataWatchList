@@ -10,14 +10,16 @@ namespace RabbitMQStockPriceUpdater.Service
 {
     public class PriceUpdater : IPriceUpdater
     {
-        private readonly ICompanyDbContext _context;
+        // private readonly ICompanyDbContext _context;
+        private readonly ICompanyDbContextFactory _contextFactory;
         private readonly Random _random;
 
-        public PriceUpdater(ICompanyDbContext context)
+        public PriceUpdater(ICompanyDbContextFactory contextFactory, Random random)
         {
-            _context = context;
-            _random = new Random();
+            _contextFactory = contextFactory;
+            _random = random;
         }
+
         public async Task<decimal> RandomePriceGenerator(int CompanyID)
         {
             decimal randomDecimal = (decimal)_random.NextDouble() * 1000;
@@ -25,17 +27,25 @@ namespace RabbitMQStockPriceUpdater.Service
         }
         public async Task<CompanyPrice> GetCompanyID(int CompanyID)
         {
-            CompanyPrice companyPrice = await _context.CompanyPrice.AsNoTracking().Where(x => x.CompanyID == CompanyID).FirstOrDefaultAsync();
-            //  _context.Detach(companyPrice);
-            return companyPrice;
+
+            using (var context = _contextFactory.CreateContext())
+            {
+                CompanyPrice companyPrice = await context.CompanyPrice.Where(x => x.CompanyID == CompanyID).FirstOrDefaultAsync();
+                //  _context.Detach(companyPrice);
+                return companyPrice;
+            }
+            
 
         }
         public async Task<CompanyPrice> UpdateDatabaseAsync(CompanyPrice companyPrice)
         {
-            CompanyPrice obj = await GetCompanyID(companyPrice.CompanyID);
-            if (obj != null)
-                companyPrice.PriceID = obj.PriceID;
-            _context.AddOrUpdate(companyPrice);
+            using (var context = _contextFactory.CreateContext())
+            {
+                CompanyPrice obj = await GetCompanyID(companyPrice.CompanyID);
+                if (obj != null)
+                    companyPrice.PriceID = obj.PriceID;
+               context.AddOrUpdate(companyPrice);
+            }
             return companyPrice;
 
         }
